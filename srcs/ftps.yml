@@ -1,0 +1,96 @@
+apiVersion: apps/v1 # for versions before 1.6.0 use extensions/v1beta1
+kind: Deployment
+metadata:
+  name: ftps
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: ftps
+  template:
+    metadata:
+      labels:
+        app: ftps
+    spec:
+      volumes:
+      - name: ftps-pv-storage
+        persistentVolumeClaim:
+          claimName: ftps-pv-storage
+      containers:
+      - name: ftps
+        image: ftps
+        imagePullPolicy : Never
+        ports:
+        - containerPort: 21
+        - containerPort: 20
+        - containerPort: 31100
+        - containerPort: 31101
+        - containerPort: 31102
+        - containerPort: 31103
+          protocol: TCP
+          name: "ftps"
+        volumeMounts:
+        - mountPath: "/home/vsftpd"
+          name: ftps-pv-storage
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: ftps
+  labels:
+    app: ftps
+spec:
+  type: NodePort
+  ports:
+    - name: port1
+      port: 21
+      targetPort: 21
+      nodePort: 21
+    - name: port2
+      port: 20
+      targetPort: 20
+      nodePort: 20
+    - name: port3
+      port: 31100
+      targetPort: 31100
+      nodePort: 31100
+    - name: port4
+      port: 31101
+      targetPort: 31101
+      nodePort: 31101
+    - name: port5
+      port: 31102
+      targetPort: 31102
+      nodePort: 31102
+    - name: port6
+      port: 31103
+      targetPort: 31103
+      nodePort: 31103
+  selector:
+    app: ftps
+---
+kind: PersistentVolumeClaim
+apiVersion: v1
+metadata:
+  name: ftps-pv-storage
+spec:
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: 3Gi
+---
+kind: PersistentVolume
+apiVersion: v1
+metadata:
+  name: ftps-pv-storage
+spec:
+  capacity:
+    storage: 4Gi
+  accessModes:
+    - ReadWriteOnce
+  hostPath:
+    path: "/tmp/data"
+  claimRef:
+    namespace: default
+    name: ftps-pv-storage

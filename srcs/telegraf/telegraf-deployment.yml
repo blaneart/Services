@@ -1,0 +1,41 @@
+apiVersion: v1
+
+kind: Secret
+metadata:
+  name: telegraf-secrets
+type: Opaque
+stringData:
+  INFLUXDB_DB: telegraf
+  INFLUXDB_URL: http://influxdb:8086
+  INFLUXDB_USER: admin
+  INFLUXDB_USER_PASSWORD: admin
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: telegraf
+spec:
+  selector:
+    matchLabels:
+      app: telegraf
+  minReadySeconds: 5
+  template:
+    metadata:
+      labels:
+        app: telegraf
+    spec:
+      containers:
+        - image: telegraf
+          name: telegraf
+          volumeMounts:
+            - mountPath: /etc/telegraf/telegraf.conf
+              name: telegraf-conf
+              subPath: telegraf.conf
+              readOnly: true
+          envFrom:
+            - secretRef:
+                name: telegraf-secrets
+      volumes:
+        - name: telegraf-conf
+          configMap:
+            name: telegraf-conf

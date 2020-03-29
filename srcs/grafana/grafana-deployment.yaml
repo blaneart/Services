@@ -1,0 +1,26 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: grafana
+spec:
+  selector:
+    matchLabels:
+      app: grafana
+  minReadySeconds: 5
+  template:
+    metadata:
+      labels:
+        app: grafana
+    spec:
+      containers:
+      - env:
+        - name: GF_INSTALL_PLUGINS
+          value: grafana-piechart-panel, blackmirror1-singlestat-math-panel
+        - name: GF_SECURITY_ADMIN_PASSWORD
+          value: admin
+        image: grafana
+        imagePullPolicy : Never
+        name: grafana
+        ports:
+        - containerPort: 3000
+      restartPolicy: Always

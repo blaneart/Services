@@ -1,0 +1,57 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: nginx
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: nginx
+  template:
+    metadata:
+      labels:
+        app: nginx
+    spec:
+      containers:
+        - name: nginx
+          image: nginx
+          imagePullPolicy : Never
+          ports:
+          - containerPort: 80
+          - containerPort: 443
+          - containerPort: 32
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: nginx
+  labels:
+    app: nginx
+spec:
+  type: NodePort
+  ports:
+  - port: 80
+    targetPort: 80
+    nodePort: 80
+    protocol: TCP
+    name: http
+  - port: 443
+    targetPort: 443
+    nodePort: 443
+    protocol: TCP
+    name: https
+  - port: 32
+    targetPort: 32
+    nodePort: 32
+    protocol: TCP
+    name: ssh
+  selector:
+    app: nginx
+          # volumeMounts:
+          #   - name: nginx-config
+          #     mountPath: /etc/nginx/nginx.conf
+          #     subPath: nginx.conf
+      # volumes:
+      #   - name: nginx-config
+      #     configMap:
+      #       name: confnginx

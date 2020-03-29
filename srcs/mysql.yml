@@ -1,0 +1,54 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: mysql   # will be used as a value in
+  labels:                 # WORDPRESS_DB_HOST in deploy.yml
+    app: wordpress
+    app: phpmyadmin
+spec:
+  ports:
+    - name: mysql
+      port: 3306
+      protocol: TCP
+      targetPort: 3306
+  selector:
+    app: wordpress
+    app: phpmyadmin
+    tier: mysql
+---
+apiVersion:  apps/v1 # for versions before 1.9.0 use apps/v1beta2
+kind: Deployment
+metadata:
+  name: mysql
+  labels:
+    app: wordpress
+    app: phpmyadmin
+spec:
+  selector:
+    matchLabels:
+      app: wordpress
+      app: phpmyadmin
+      tier: mysql
+  strategy:
+    type: Recreate
+  template:
+    metadata:
+      labels:
+        app: wordpress
+        app: phpmyadmin
+        tier: mysql
+    spec:
+      containers:
+      - image: mysql
+        imagePullPolicy : Never
+        name: mysql
+        ports:
+        - containerPort: 3306
+          name: mysql
+        volumeMounts:
+        - name: mysql-persistent-storage  # which data will be stored
+          mountPath: "/var/lib/mysql"
+      volumes:
+      - name: mysql-persistent-storage    # PVC
+        persistentVolumeClaim:
+          claimName: mysql-persistent-storage
